@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as S from "./style";
 import { isEmailValid } from "../../helpers/EmailHelpers";
 import ValidationError from "../../components/validation-error/ValidationError";
+import { useNavigate } from "react-router-dom";
 
 export function Login() {
   const [form, setForm] = useState({
@@ -14,6 +15,11 @@ export function Login() {
       value: "",
     },
   });
+
+  const navigate = useNavigate();
+  const goToRegisterPage = () => {
+    navigate("/register");
+  };
 
   return (
     <S.Container>
@@ -91,7 +97,13 @@ export function Login() {
             Entrar
           </button>
           <br />
-          <button type="button">Registrar</button>
+          <button
+            data-testid="register-button"
+            type="button"
+            onClick={goToRegisterPage}
+          >
+            Registrar
+          </button>
         </form>
       </section>
     </S.Container>
