@@ -46,8 +46,9 @@ export const Container = styled.div`
       font-size: ${sizes.s};
       cursor: pointer;
       background-color: ${colors.primaryGreen};
-      &:active {
-        background-color: #20fc8712;
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
     }
     button:nth-of-type(1) {
@@ -57,9 +58,6 @@ export const Container = styled.div`
       border-radius: 5px;
       color: #fff;
       margin-top: -10px;
-      &:active {
-        background-color: #20fc8712;
-      }
     }
     button:nth-of-type(3) {
       height: 50px;
@@ -68,9 +66,6 @@ export const Container = styled.div`
       background-color: transparent;
       color: #fff;
       border: solid 1px ${colors.primaryGreen};
-      &:active {
-        background-color: #20fc8712;
-      }
     }
   }
 `;

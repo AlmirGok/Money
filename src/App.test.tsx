@@ -69,4 +69,38 @@ describe("Login", () => {
     const requiredError = screen.queryByTestId("password-required");
     expect(requiredError).toBeNull();
   });
+
+  test("given email, when emply, then disable recover passsword button", () => {
+    render(<App />);
+    const recoverPasswordButton = screen.getByTestId("recover-password-button");
+    expect(recoverPasswordButton).toBeDefined();
+  });
+
+  test("given email, when valid, then anable recover passsword button", () => {
+    render(<App />);
+    const email = screen.getByTestId("email");
+    userEvent.type(email, "valid@email.com");
+
+    const recoverPasswordButton = screen.getByTestId("recover-password-button");
+    expect(recoverPasswordButton).not.toBeDisabled();
+  });
+
+  test("given form invalid,then disable login button", () => {
+    render(<App />);
+
+    const loginButton = screen.getByTestId("login-button");
+    expect(loginButton).toBeDefined();
+  });
+
+  test("given form valid, then anable login button", () => {
+    render(<App />);
+    const email = screen.getByTestId("email");
+    userEvent.type(email, "valid@email.com");
+    const password = screen.getByTestId("password");
+    userEvent.type(password, "anyValue");
+
+    const loginButton = screen.getByTestId("login-button");
+
+    expect(loginButton).not.toBeDisabled();
+  });
 });

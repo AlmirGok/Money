@@ -1,5 +1,7 @@
 import { useState } from "react";
 import * as S from "./style";
+import { isEmailValid } from "../../helpers/EmailHelpers";
+import ValidationError from "../../components/validation-error/ValidationError";
 
 export function Login() {
   const [form, setForm] = useState({
@@ -12,10 +14,6 @@ export function Login() {
       value: "",
     },
   });
-
-  const isEmailValid = (email: string) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
 
   return (
     <S.Container>
@@ -36,12 +34,21 @@ export function Login() {
             placeholder="E-mail"
             data-testid="email"
           />
-          {form.email.hasChanger && !form.email.value && (
-            <span data-testid="email-required">*E-mail é obrigatório</span>
-          )}
-          {form.email.hasChanger && !isEmailValid(form.email.value) && (
-            <span data-testid="email-invalid">*E-mail é inválido</span>
-          )}
+
+          <ValidationError
+            hasChanged={form.email.hasChanger}
+            errorMessage="*E-mail é obrigatorio"
+            testId="email-required"
+            type="required"
+            value={form.email.value}
+          />
+          <ValidationError
+            hasChanged={form.email.hasChanger}
+            errorMessage="*E-mail é inválido"
+            testId="email-invalid"
+            type="email"
+            value={form.email.value}
+          />
           <br />
           <br />
           <input
@@ -59,14 +66,30 @@ export function Login() {
             placeholder="Senha"
             data-testid="password"
           />
-          {form.password.hasChanger && !form.password.value && (
-            <span data-testid="password-required">*Senha é obrigatória</span>
-          )}
+          <ValidationError
+            hasChanged={form.password.hasChanger}
+            errorMessage="*Senha é obrigatória"
+            testId="password-required"
+            type="required"
+            value={form.password.value}
+          />
           <br />
           <br />
-          <button type="button">Recuperar senha</button>
+          <button
+            data-testid="recover-password-button"
+            disabled={!isEmailValid(form.email.value)}
+            type="button"
+          >
+            Recuperar senha
+          </button>
           <br />
-          <button type="button">Entrar</button>
+          <button
+            data-testid="login-button"
+            disabled={!isEmailValid(form.email.value) || !form.password.value}
+            type="button"
+          >
+            Entrar
+          </button>
           <br />
           <button type="button">Registrar</button>
         </form>
