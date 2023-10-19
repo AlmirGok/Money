@@ -1,17 +1,19 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Register from "./../register";
+import Register from "../register";
 import { Login } from ".";
+import userEvent from "@testing-library/user-event";
 
 describe("Login", () => {
+  let authService: AuthServiceMock;
+
+  beforeEach(() => {
+    authService = new AuthServiceMock();
+  });
+
   describe("given email", () => {
     test("when empty, then show required error message", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const email = screen.getByTestId("email");
 
@@ -23,11 +25,7 @@ describe("Login", () => {
     });
 
     test("when has value, then hide required error message", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const email = screen.getByTestId("email");
 
@@ -38,22 +36,14 @@ describe("Login", () => {
     });
 
     test("when field not changed, then hide required error message", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const requiredError = screen.queryByTestId("email-required");
       expect(requiredError).toBeNull();
     });
 
     test("when invalid, then show invalid error message", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const email = screen.getByTestId("email");
 
@@ -64,11 +54,7 @@ describe("Login", () => {
     });
 
     test("when valid, then hide invalid error message", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const email = screen.getByTestId("email");
 
@@ -79,11 +65,7 @@ describe("Login", () => {
     });
 
     test("when empty, then disable recover password button", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const recoverPasswordButton = screen.getByTestId(
         "recover-password-button"
@@ -93,11 +75,7 @@ describe("Login", () => {
     });
 
     test("when valid, then enable recover password button", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const email = screen.getByTestId("email");
       userEvent.type(email, "valid@email.com");
@@ -112,11 +90,7 @@ describe("Login", () => {
 
   describe("given password", () => {
     test("when empty, then show required error message", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const password = screen.getByTestId("password");
 
@@ -128,11 +102,7 @@ describe("Login", () => {
     });
 
     test("when has value, then hide required error message", () => {
-      render(
-        <BrowserRouter>
-          <Login />
-        </BrowserRouter>
-      );
+      renderLoginPage();
 
       const password = screen.getByTestId("password");
 
@@ -144,11 +114,7 @@ describe("Login", () => {
   });
 
   test("given form invalid, then disable login button", () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+    renderLoginPage();
 
     const loginButton = screen.getByTestId("login-button");
 
@@ -156,11 +122,7 @@ describe("Login", () => {
   });
 
   test("given form valid, then enable login button", () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+    renderLoginPage();
 
     const email = screen.getByTestId("email");
     userEvent.type(email, "valid@email.com");
@@ -168,22 +130,86 @@ describe("Login", () => {
     userEvent.type(password, "anyValue");
 
     const loginButton = screen.getByTestId("login-button");
+
     expect(loginButton).not.toBeDisabled();
   });
 
-  test("given user clicks on register button, then go to register page", async () => {
+  test("given user clicks on register button, then go to register page", () => {
+    renderLoginPage();
+    const registerButton = screen.getByTestId("register-button");
+    userEvent.click(registerButton);
+
+    expect(window.location.pathname).toEqual("/register");
+  });
+
+  test("given user clicks on login button, then call login", async () => {
+    authService.response = Promise.resolve({} as any);
+
+    renderLoginPage();
+
+    const email = screen.getByTestId("email");
+    userEvent.type(email, "valid@email.com");
+    const password = screen.getByTestId("password");
+    userEvent.type(password, "anyValue");
+
+    const loginButton = screen.getByTestId("login-button");
+    userEvent.click(loginButton);
+
+    await waitFor(() => expect(authService.isLoggingIn).toBeTruthy());
+  });
+
+  test("given user clicks on login button, when success, then go to home page", async () => {
+    authService.response = Promise.resolve({} as any);
+
+    renderLoginPage();
+
+    const email = screen.getByTestId("email");
+    userEvent.type(email, "valid@email.com");
+    const password = screen.getByTestId("password");
+    userEvent.type(password, "anyValue");
+
+    const loginButton = screen.getByTestId("login-button");
+    userEvent.click(loginButton);
+
+    await waitFor(() => expect(window.location.pathname).toEqual("/home"));
+  });
+
+  test("given user clicks on login button, when fail, then show error message", async () => {
+    authService.response = Promise.reject({ message: "error" });
+
+    renderLoginPage();
+
+    const email = screen.getByTestId("email");
+    userEvent.type(email, "valid@email.com");
+    const password = screen.getByTestId("password");
+    userEvent.type(password, "anyValue");
+
+    const loginButton = screen.getByTestId("login-button");
+    userEvent.click(loginButton);
+
+    expect(await screen.findByTestId("error")).not.toBeNull();
+  });
+
+  function renderLoginPage() {
     render(
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Login />} />
+        <Routes location={"/"}>
+          <Route
+            path="/"
+            element={<Login authService={authService as AuthServiceMock} />}
+          />
           <Route path="/register" element={<Register />} />
         </Routes>
       </BrowserRouter>
     );
+  }
 
-    const registerButton = screen.getByTestId("register-button");
-    await userEvent.click(registerButton);
-
-    expect(window.location.pathname).toEqual("/register");
-  });
+  class AuthServiceMock {
+    isLoggingIn = false;
+    response: any;
+    login() {
+      this.isLoggingIn = true;
+      return this.response;
+    }
+  }
 });

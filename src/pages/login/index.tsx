@@ -3,8 +3,13 @@ import * as S from "./style";
 import { isEmailValid } from "../../helpers/EmailHelpers";
 import ValidationError from "../../components/validation-error/ValidationError";
 import { useNavigate } from "react-router-dom";
+import AuthService from "../../services/AuthServrice";
 
-export function Login() {
+type LoginPageProps = {
+  authService: AuthService;
+};
+
+export function Login(props: LoginPageProps) {
   const [form, setForm] = useState({
     email: {
       hasChanger: false,
@@ -15,6 +20,19 @@ export function Login() {
       value: "",
     },
   });
+
+  const [error, setError] = useState(null as any);
+
+  const login = () => {
+    props.authService
+      .login(form.email.value, form.password.value)
+      .then(() => {
+        navigate("/home");
+      })
+      .catch((error) => {
+        setError(error);
+      });
+  };
 
   const navigate = useNavigate();
   const goToRegisterPage = () => {
@@ -79,6 +97,8 @@ export function Login() {
             type="required"
             value={form.password.value}
           />
+
+          {error && <span data-testid="error">{error.message}</span>}
           <br />
           <br />
           <button
@@ -93,6 +113,7 @@ export function Login() {
             data-testid="login-button"
             disabled={!isEmailValid(form.email.value) || !form.password.value}
             type="button"
+            onClick={login}
           >
             Entrar
           </button>
