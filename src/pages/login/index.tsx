@@ -4,6 +4,7 @@ import { isEmailValid } from "../../helpers/EmailHelpers";
 import ValidationError from "../../components/validation-error/ValidationError";
 import { useNavigate } from "react-router-dom";
 import AuthService from "../../services/AuthServrice";
+import Loading from "../../components/loading";
 
 type LoginPageProps = {
   authService: AuthService;
@@ -22,15 +23,36 @@ export function Login(props: LoginPageProps) {
   });
 
   const [error, setError] = useState(null as any);
+  const [showLoading, setShowLoading] = useState(false);
+  const [showRecoverPasswordMessage, setShowRecoverPasswordMessage] =
+    useState(false);
 
   const login = () => {
+    setShowLoading(true);
     props.authService
       .login(form.email.value, form.password.value)
       .then(() => {
+        setShowLoading(false);
         navigate("/home");
       })
       .catch((error) => {
+        setShowLoading(false);
         setError(error);
+      });
+  };
+
+  const recoverPassword = () => {
+    setShowLoading(true);
+    props.authService
+      .recoverPassword(form.email.value)
+      .then(() => {
+        setShowLoading(false);
+        setShowRecoverPasswordMessage(true);
+      })
+      .catch((error) => {
+        setShowLoading(false);
+        setError(error);
+        setShowRecoverPasswordMessage(false);
       });
   };
 
@@ -105,6 +127,7 @@ export function Login(props: LoginPageProps) {
             data-testid="recover-password-button"
             disabled={!isEmailValid(form.email.value)}
             type="button"
+            onClick={recoverPassword}
           >
             Recuperar senha
           </button>
@@ -126,6 +149,8 @@ export function Login(props: LoginPageProps) {
             Registrar
           </button>
         </form>
+        {showLoading && <Loading />}
+        {showRecoverPasswordMessage && <div>Verifique sua caixa de email</div>}
       </section>
     </S.Container>
   );

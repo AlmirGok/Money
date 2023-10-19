@@ -196,7 +196,7 @@ describe("Login", () => {
         <Routes location={"/"}>
           <Route
             path="/"
-            element={<Login authService={authService as AuthServiceMock} />}
+            element={<Login authService={authService as any} />}
           />
           <Route path="/register" element={<Register />} />
         </Routes>
@@ -206,9 +206,14 @@ describe("Login", () => {
 
   class AuthServiceMock {
     isLoggingIn = false;
+    isRecoveringPassword = false;
     response: any;
     login() {
       this.isLoggingIn = true;
+      return this.response;
+    }
+    recoverPassword() {
+      this.isRecoveringPassword = true;
       return this.response;
     }
   }
